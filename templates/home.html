@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Youtube Subs List</title>
+</head>
+
+<body>
+  <h1>Add Channel</h1>
+  <input type="text" name="channel" required>
+  <button type="submit">Add</button>
+
+  <h1>Subs</h1>
+  <ul>
+    {{range .}}
+    <li><a href="{{.ID}}" target="_blank" rel="noopener noreferrer">{{.Name}}</a></li>
+    {{end}}
+  </ul>
+</body>
+
+</html>
