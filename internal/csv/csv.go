@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 )
 
 type Channel struct {
@@ -21,7 +22,7 @@ func AddChannel(csvPath, url string) error {
 	defer file.Close()
 
 	w := csv.NewWriter(file)
-	if err := w.Write([]string{url, "test"}); err != nil {
+	if err := w.Write([]string{extractID(url), "test"}); err != nil {
 		return fmt.Errorf("write record: %w", err)
 	}
 	w.Flush()
@@ -56,5 +57,17 @@ func readAll(r *csv.Reader) (channels []Channel, err error) {
 			return nil, err
 		}
 		channels = append(channels, Channel{ID: ch[0], Name: ch[1]})
+	}
+}
+
+func extractID(link string) string {
+	reUsername := regexp.MustCompile(`(?:^|\/)(@[A-Za-z0-9._-]+)`)
+	reID := regexp.MustCompile(`(?:^|/)channel/([A-Za-z0-9_-]+)`)
+	if match := reUsername.FindStringSubmatch(link); len(match) > 1 {
+		return match[1]
+	} else if match = reID.FindStringSubmatch(link); len(match) > 1 {
+		return match[1]
+	} else {
+		return ""
 	}
 }
