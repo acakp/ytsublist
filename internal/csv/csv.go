@@ -13,26 +13,33 @@ type Channel struct {
 	Name string
 }
 
-func AddChannel(csvPath, url string) error {
+func AddChannel(csvPath, url string) (bool, error) {
+	// return bool=true when channel was actually added, otherwise return false
+	// if id was not found, do nothing
+	id := extractID(url)
+	if id == "" {
+		return false, nil
+	}
+	// else add this id to csv file
 	file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("error while opening file:")
-		return fmt.Errorf("open %s for append: %w", csvPath, err)
+		return true, fmt.Errorf("open %s for append: %w", csvPath, err)
 	}
 	defer file.Close()
 
 	w := csv.NewWriter(file)
-	if err := w.Write([]string{extractID(url), "test"}); err != nil {
-		return fmt.Errorf("write record: %w", err)
+	if err := w.Write([]string{id, "test"}); err != nil {
+		return false, fmt.Errorf("write record: %w", err)
 	}
 	w.Flush()
 	if err := w.Error(); err != nil {
-		return fmt.Errorf("flush csv: %w", err)
+		return false, fmt.Errorf("flush csv: %w", err)
 	}
 	if err := file.Sync(); err != nil {
-		return fmt.Errorf("fsync %s: %w", csvPath, err)
+		return false, fmt.Errorf("fsync %s: %w", csvPath, err)
 	}
-	return nil
+	return true, nil
 }
 
 func ReadCsv(filePath string) ([]Channel, error) {

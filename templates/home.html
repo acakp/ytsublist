@@ -8,8 +8,11 @@
 
 <body>
   <h1>Add Channel</h1>
-  <input type="text" name="channel" required>
-  <button type="submit">Add</button>
+  <form action="/add_channel" method="post">
+    <label for="chlink">Channel url or @handle<br></label>
+    <input type="text" id="chlink" name="chlink" size="40">
+    <input type="submit" value="Add">
+  </form>
 
   <h1>Subs</h1>
   <ul>
