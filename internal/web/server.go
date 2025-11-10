@@ -8,9 +8,20 @@ import (
 	"ytsublist/internal/csv"
 )
 
+type Flash struct {
+	Message string
+	Type    string // "success" or "fail"
+}
+
+type Data struct {
+	Channels []csv.Channel
+	Flash    *Flash
+}
+
 func Serve() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/add_channel", addChannelHandler)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	fmt.Println("Starting the server on :8080")
 	http.ListenAndServe(":8080", nil)
 }
@@ -33,7 +44,19 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("error while creating html template:")
 		log.Fatal(err)
 	}
-	tmpl.Execute(w, chs)
+	// checking if channel was added succesfully after addChannel
+	status := r.URL.Query().Get("status")
+	var flash Flash
+	switch status {
+	case "success":
+		flash.Message = "Channel was added successfully"
+		flash.Type = "success"
+	case "fail":
+		flash.Message = "Can't find channel url or handle in provided string"
+		flash.Type = "fail"
+	}
+	d := Data{Channels: chs, Flash: &flash}
+	tmpl.Execute(w, d)
 }
 
 func addChannelHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,8 +69,13 @@ func addChannelHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	r.PostForm.Add("isAdded", "true")
-	http.Redirect(w, r, "/", 303)
+	var status string
+	if isAdded {
+		status = "success"
+	} else {
+		status = "fail"
+	}
+	http.Redirect(w, r, "/?status="+status, 303)
 }
 
 func makeLink(instance, id string) string {

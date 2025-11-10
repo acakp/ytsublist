@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>Youtube Subs List</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 
 <body>
@@ -12,11 +13,12 @@
     <label for="chlink">Channel url or @handle<br></label>
     <input type="text" id="chlink" name="chlink" size="40">
     <input type="submit" value="Add">
+    <label class="{{ .Flash.Type }}"><br>{{ .Flash.Message }}</label>
   </form>
 
   <h1>Subs</h1>
   <ul>
-    {{range .}}
+    {{range .Channels}}
     <li><a href="{{.ID}}" target="_blank" rel="noopener noreferrer">{{.Name}}</a></li>
     {{end}}
   </ul>
